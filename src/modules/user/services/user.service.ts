@@ -1,17 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserInput } from '../dto/user-input.dto';
 import { UserRepository } from '../repositories/user.repository';
 import { User } from '../entities/user.entity';
 import { plainToInstance } from 'class-transformer';
 import { UserOutput } from '../dto/user-output.dto';
 import { IUser } from '../interfaces/user.interface';
 import { FindOptionsWhere } from 'typeorm';
+import { RegisterInput } from 'src/modules/auth/dto/auth-input.dto';
 
 @Injectable()
 export class UserService implements IUser {
   constructor(private readonly repository: UserRepository) {}
 
-  async createUser(user: CreateUserInput): Promise<UserOutput> {
+  async createUser(user: RegisterInput): Promise<UserOutput> {
     const savedUser = await this.repository.save(user);
 
     return plainToInstance(UserOutput, savedUser, {
@@ -20,12 +20,12 @@ export class UserService implements IUser {
   }
 
   async doesUsernameExist(username: string): Promise<boolean> {
-    const user = this.repository.getUserByUsername(username);
+    const user = await this.repository.getUserByUsername(username);
     return !!user;
   }
 
   async doesEmailExist(email: string): Promise<boolean> {
-    const user = this.repository.getUserByEmail(email);
+    const user = await this.repository.getUserByEmail(email);
     return !!user;
   }
 
