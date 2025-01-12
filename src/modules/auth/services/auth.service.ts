@@ -1,7 +1,14 @@
-import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { LoginInput, RegisterInput } from '../dto/auth-input.dto';
 import { IUser } from 'src/modules/user/interfaces/user.interface';
-import { genSalt, hash } from 'bcrypt';
+import { compare, genSalt, hash } from 'bcrypt';
+import { plainToInstance } from 'class-transformer';
+import { UserOutput } from 'src/modules/user/dto/user-output.dto';
 
 @Injectable()
 export class AuthService {
@@ -31,7 +38,19 @@ export class AuthService {
     return createdUser;
   }
 
-  async login(input: LoginInput) {}
+  async login({ username, password }: LoginInput) {
+    const user = await this.userService.getFullUser({ username });
+    if (!user) {
+      throw new UnauthorizedException('Username or password is wrong');
+    }
+
+    const comparePassword = await compare(password, user.password);
+    if (!comparePassword) {
+      throw new UnauthorizedException('Username or password is wrong');
+    }
+
+    return plainToInstance(UserOutput, user, { excludeExtraneousValues: true });
+  }
 
   logout() {}
 }
