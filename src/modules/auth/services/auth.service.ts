@@ -7,12 +7,14 @@ import {
 import { LoginInput, RegisterInput } from '../dto/auth-input.dto';
 import { IUser } from 'src/modules/user/interfaces/user.interface';
 import { compare, genSalt, hash } from 'bcrypt';
-import { plainToInstance } from 'class-transformer';
-import { UserOutput } from 'src/modules/user/dto/user-output.dto';
+import { ISession } from 'src/modules/session/interfaces/session.interface';
 
 @Injectable()
 export class AuthService {
-  constructor(@Inject(IUser) private readonly userService: IUser) {}
+  constructor(
+    @Inject(IUser) private readonly userService: IUser,
+    @Inject(ISession) private readonly sessionService: ISession,
+  ) {}
 
   async register({ username, email, password }: RegisterInput) {
     const doesUsernameExist =
@@ -35,7 +37,7 @@ export class AuthService {
       password: hashedPassword,
     });
 
-    return createdUser;
+    return this.login({ username, password });
   }
 
   async login({ username, password }: LoginInput) {
@@ -49,8 +51,11 @@ export class AuthService {
       throw new UnauthorizedException('Username or password is wrong');
     }
 
-    return plainToInstance(UserOutput, user, { excludeExtraneousValues: true });
+    return user;
   }
 
-  logout() {}
+  async logout(token: string): Promise<void> {
+    await this.sessionService.setSessionAsExpired(token);
+    // TOOD: Set current token as expired
+  }
 }
