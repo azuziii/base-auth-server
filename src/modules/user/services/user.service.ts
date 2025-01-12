@@ -1,10 +1,11 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateUserInput } from '../dto/user-input.dto';
 import { UserRepository } from '../repositories/user.repository';
 import { User } from '../entities/user.entity';
 import { plainToInstance } from 'class-transformer';
 import { UserOutput } from '../dto/user-output.dto';
 import { IUser } from '../interfaces/user.interface';
+import { FindOptionsWhere } from 'typeorm';
 
 @Injectable()
 export class UserService implements IUser {
@@ -26,5 +27,10 @@ export class UserService implements IUser {
   async doesEmailExist(email: string): Promise<boolean> {
     const user = this.repository.getUserByEmail(email);
     return !!user;
+  }
+
+  async getFullUser(options?: FindOptionsWhere<User>): Promise<User> {
+    const user = await this.repository.findOne({ where: options });
+    return user;
   }
 }
