@@ -15,9 +15,8 @@ export class UserMiddleware implements NestMiddleware {
     if (!session_token) return next();
 
     const session = await this.sessionService.getSessionByToken(session_token);
-    if (!session) return next();
 
-    // TODO: Validate IP and user agent before allowing user in
+    if (!session || session.expired()) return next();
 
     const user = await this.userService.getFullUser({
       id: session.user_id,
