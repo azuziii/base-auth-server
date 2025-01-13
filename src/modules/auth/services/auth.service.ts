@@ -56,6 +56,5 @@ export class AuthService {
 
   async logout(token: string): Promise<void> {
     await this.sessionService.setSessionAsExpired(token);
-    // TOOD: Set current token as expired
   }
 }
