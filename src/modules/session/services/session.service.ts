@@ -25,7 +25,7 @@ export class SessionService implements ISession {
       ip_address: ipAddress,
       user_agent: userAgent,
       user_id: userId,
-      expires_at: new Date(Date.now() + 60 * 1000),
+      expires_at: new Date(Date.now() + 60 * 60 * 1000),
     });
 
     return {
