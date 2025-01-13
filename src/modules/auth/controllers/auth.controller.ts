@@ -2,9 +2,11 @@ import {
   Body,
   Controller,
   Get,
+  HttpStatus,
   Post,
   Req,
   Res,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
@@ -16,6 +18,7 @@ import { Public } from '../decorators/public.decorator';
 import { Request, Response } from 'express';
 import { plainToInstance } from 'class-transformer';
 import { User } from 'src/modules/user/entities/user.entity';
+import { ClearCookieGuard } from '../guards/auth-guard/clear-cookie.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -46,12 +49,9 @@ export class AuthController {
   }
 
   @Post('logout')
-  logout(
-    @Req() request: Request,
-    @Res({ passthrough: true }) response: Response,
-  ) {
-    this.authService.logout(request.cookies['session_token']);
-    return response.clearCookie('session_token').send();
+  @UseGuards(ClearCookieGuard)
+  async logout(@Req() request: Request) {
+    await this.authService.logout(request.cookies['session_token']);
   }
 
   @Get('self')
